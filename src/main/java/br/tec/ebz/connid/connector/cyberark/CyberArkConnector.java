@@ -17,9 +17,12 @@
 package br.tec.ebz.connid.connector.cyberark;
 
 import org.identityconnectors.common.logging.Log;
+import org.identityconnectors.framework.common.exceptions.ConfigurationException;
 import org.identityconnectors.framework.spi.Configuration;
 import org.identityconnectors.framework.spi.Connector;
 import org.identityconnectors.framework.spi.ConnectorClass;
+
+import java.net.URISyntaxException;
 
 @ConnectorClass(displayNameKey = "cyberark.connector.display", configurationClass = CyberArkConfiguration.class)
 public class CyberArkConnector implements Connector {
@@ -36,8 +39,15 @@ public class CyberArkConnector implements Connector {
 
     @Override
     public void init(Configuration configuration) {
-        this.configuration = (CyberArkConfiguration)configuration;
-        this.connection = new CyberArkConnection(this.configuration);
+        try {
+            LOG.info("Initializing CyberArk connection.");
+            this.configuration = (CyberArkConfiguration) configuration;
+            this.connection = new CyberArkConnection(this.configuration);
+
+            LOG.info("CyberArk connection initialized successfully.");
+        } catch (URISyntaxException e) {
+            throw new ConfigurationException("Could not connect to CyberArk API, reason: {0}", e);
+        }
     }
 
     @Override
