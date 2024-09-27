@@ -21,11 +21,12 @@ import org.identityconnectors.framework.common.exceptions.ConfigurationException
 import org.identityconnectors.framework.spi.Configuration;
 import org.identityconnectors.framework.spi.Connector;
 import org.identityconnectors.framework.spi.ConnectorClass;
+import org.identityconnectors.framework.spi.operations.TestOp;
 
 import java.net.URISyntaxException;
 
 @ConnectorClass(displayNameKey = "cyberark.connector.display", configurationClass = CyberArkConfiguration.class)
-public class CyberArkConnector implements Connector {
+public class CyberArkConnector implements Connector, TestOp {
 
     private static final Log LOG = Log.getLog(CyberArkConnector.class);
 
@@ -57,5 +58,10 @@ public class CyberArkConnector implements Connector {
             connection.dispose();
             connection = null;
         }
+    }
+
+    @Override
+    public void test() {
+
     }
 }
