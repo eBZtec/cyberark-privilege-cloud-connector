@@ -16,6 +16,8 @@
 
 package br.tec.ebz.connid.connector.cyberark;
 
+import org.identityconnectors.common.security.GuardedString;
+import org.identityconnectors.framework.common.exceptions.ConfigurationException;
 import org.identityconnectors.framework.spi.AbstractConfiguration;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.spi.ConfigurationProperty;
@@ -24,20 +26,78 @@ public class CyberArkConfiguration extends AbstractConfiguration {
 
     private static final Log LOG = Log.getLog(CyberArkConfiguration.class);
 
-    private String sampleProperty;
+    private String domain = "";
+    private String user = "";
+    private GuardedString password;
+    private String method = "CyberArk";
 
     @Override
     public void validate() {
-        //todo implement
+        String exceptionMsg = "";
+
+        if (domain.isEmpty() || domain.isBlank()) {
+            exceptionMsg = "Domain is required";
+        } else if (user.isEmpty() || user.isBlank()) {
+            exceptionMsg = "User is required";
+        } else if (password == null) {
+            exceptionMsg = "Password is required";
+        }
+
+        if (!exceptionMsg.isBlank()) {
+            throw new ConfigurationException("Configuration failed, reason: " + exceptionMsg);
+        }
     }
 
-    @ConfigurationProperty(displayMessageKey = "cyberark.config.sampleProperty",
-            helpMessageKey = "cyberark.config.sampleProperty.help")
-    public String getSampleProperty() {
-        return sampleProperty;
+    @ConfigurationProperty(
+            displayMessageKey = "cyberark.config.domain",
+            helpMessageKey = "cyberark.config.domain.help",
+            required = true
+    )
+    public String getDomain() {
+        return domain;
     }
 
-    public void setSampleProperty(String sampleProperty) {
-        this.sampleProperty = sampleProperty;
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    @ConfigurationProperty(
+            displayMessageKey = "cyberark.config.user",
+            helpMessageKey = "cyberark.config.user.help",
+            required = true
+    )
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    @ConfigurationProperty(
+            displayMessageKey = "cyberark.config.password",
+            helpMessageKey = "cyberark.config.password.help",
+            required = true,
+            confidential = true
+    )
+    public GuardedString getPassword() {
+        return password;
+    }
+
+    public void setPassword(GuardedString password) {
+        this.password = password;
+    }
+
+    @ConfigurationProperty(
+            displayMessageKey = "cyberark.config.method",
+            helpMessageKey = "cyberark.config.method.help",
+            required = true
+    )
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
     }
 }
