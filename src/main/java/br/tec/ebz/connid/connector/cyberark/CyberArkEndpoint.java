@@ -16,14 +16,13 @@ import org.apache.hc.core5.net.URIBuilder;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.client5.http.HttpRequestRetryStrategy;
 import org.identityconnectors.common.logging.Log;
-import org.identityconnectors.framework.common.exceptions.ConnectorException;
-import org.identityconnectors.framework.common.exceptions.ConnectorIOException;
-import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
+import org.identityconnectors.framework.common.exceptions.*;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -35,13 +34,11 @@ public class CyberArkEndpoint {
     private static final String LOGOFF_ENPOINT = "/PasswordVault/API/Auth/Logoff/";
 
     private final CyberArkConfiguration configuration;
-    private final URIBuilder uriBuilder;
     private CloseableHttpClient httpClient;
     private String token;
 
     public CyberArkEndpoint(CyberArkConfiguration configuration) throws URISyntaxException {
         this.configuration = configuration;
-        this.uriBuilder = createURIBuilder();
 
         initHttpClient();
         logon();
@@ -67,7 +64,7 @@ public class CyberArkEndpoint {
 
         HttpPost post = new HttpPost(logonUri);
 
-        JSONObject tokenResponse = request(post, logonBodyParameters, true);
+        JSONObject tokenResponse = request(post, logonBodyParameters, true, false);
 
         token = tokenResponse.getString("session_token");
     }
@@ -80,7 +77,7 @@ public class CyberArkEndpoint {
         LOG.info("URI defined: {0}", logoffUri.toString());
 
         HttpPost post = new HttpPost(logoffUri);
-        request(post, false);
+        request(post, false, true);
         LOG.ok("Session logged off successfully");
     }
 
@@ -116,12 +113,14 @@ public class CyberArkEndpoint {
         httpClient = clientBuilder.build();
     }
 
-    private ClassicHttpResponse executeRequest(HttpUriRequestBase request) {
+    private ClassicHttpResponse executeRequest(HttpUriRequestBase request, Boolean requireAuthorization) {
         if (request == null) {
             throw new InvalidAttributeValueException("Request not provided");
         }
 
-        request.setHeader("Authorization", Base64.getEncoder().encodeToString(getToken().getBytes()));
+        if (requireAuthorization) {
+            request.setHeader("Authorization", Base64.getEncoder().encodeToString(getToken().getBytes()));
+        }
         request.setHeader("Content-Type", "application/json");
 
         ClassicHttpResponse response;
@@ -142,7 +141,7 @@ public class CyberArkEndpoint {
         }
     }
 
-    protected JSONObject request(HttpUriRequestBase request, boolean parseResult) throws URISyntaxException {
+    protected JSONObject request(HttpUriRequestBase request, Boolean parseResult, Boolean requireAuthorization) throws URISyntaxException {
         if (request == null) {
             throw new InvalidAttributeValueException("Request not provided or empty");
         }
@@ -157,7 +156,7 @@ public class CyberArkEndpoint {
             }
         }
 
-        try (ClassicHttpResponse response = executeRequest(request)) {
+        try (ClassicHttpResponse response = executeRequest(request, requireAuthorization)) {
 
             if (response.getCode() == 204) {
                 LOG.ok("204 - No Content ");
@@ -183,9 +182,11 @@ public class CyberArkEndpoint {
 
     }
 
-    protected JSONObject request(HttpUriRequestBase request, JSONObject body, Boolean parseResult) throws URISyntaxException {
+    protected JSONObject request(HttpUriRequestBase request, JSONObject body, Boolean parseResult, Boolean requireAuthorization) throws URISyntaxException {
         LOG.info("request URI: {0}", request.getUri());
-        LOG.info("body {0}", body);
+        if (requireAuthorization) {
+            LOG.info("body {0}", body);
+        }
 
         byte[] bodyByte = body.toString().getBytes(StandardCharsets.UTF_8);
         HttpEntity bodyEntity = new ByteArrayEntity(bodyByte, ContentType.APPLICATION_JSON);
@@ -193,7 +194,7 @@ public class CyberArkEndpoint {
         request.setEntity(bodyEntity);
         LOG.info("request {0}", request);
 
-        ClassicHttpResponse response = executeRequest(request);
+        ClassicHttpResponse response = executeRequest(request, requireAuthorization);
 
         int statusCode = response.getCode();
         if (statusCode == 201) {
@@ -265,6 +266,38 @@ public class CyberArkEndpoint {
     };
 
     private void processResponseErrors(ClassicHttpResponse response) {
+        if (response == null) {
+            throw new InvalidAttributeValueException("Response not provided ");
+        }
+
+        int statusCode = response.getCode();
+        if (statusCode >= 200 && statusCode <= 299) {
+            return;
+        }
+
+        String responseBody = null;
+        try {
+            responseBody = EntityUtils.toString(response.getEntity());
+        } catch (IOException | ParseException e) {
+            LOG.warn("cannot read response body: " + e, e);
+        }
+
+        String message = "HTTP error " + statusCode + " " + response.getReasonPhrase() + " : " + responseBody;
+
+        if (statusCode == 400) {
+            throw new InvalidAttributeValueException(message);
+        }
+        if (statusCode == 401) {
+            throw new ConfigurationException(message);
+        }
+        if (statusCode == 403 || statusCode == 404 || statusCode == 429 || statusCode == 500 || statusCode == 501) {
+            throw new ConnectorException(message);
+        }
+        if (statusCode == 409) {
+            throw new AlreadyExistsException(message);
+        }
+
+        throw new ConnectorException(message);
 
     }
 
