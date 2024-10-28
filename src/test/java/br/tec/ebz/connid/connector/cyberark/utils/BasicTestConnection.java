@@ -17,7 +17,7 @@ public class BasicTestConnection {
 
     public ConnectorFacade getTestConnection() {
         CyberArkConfiguration configuration = new CyberArkConfiguration();
-        configuration.setDomain(propertiesReader.getDomain());
+        configuration.setServer(propertiesReader.getDomain());
         configuration.setUser(propertiesReader.getUser());
         configuration.setPassword(propertiesReader.getPassword());
 
