@@ -19,10 +19,11 @@ public enum UserSchemaAttributes {
     SUSPENDED("suspended", false, Boolean.class, 1),
     LAST_SUCCESSFUL_LOGIN_DATE("lastSuccessfullLoginDate", false, Long.class, 1),
     UNAUTHORIZED_INTERFACES("unAuthorizedInterfaces", false, List.class, -1),
-    AUTHENTICATION_METHOD("authenticationMethod", false, String.class, 1),
+    AUTHENTICATION_METHOD("authenticationMethod", false, List.class, -1),
     PASSWORD_NEVER_EXPIRES("passwordNeverExpires", false, Boolean.class, 1),
     DISTINGUISHED_NAME("distinguishedName", false, String.class, 1),
     DESCRIPTION("description", false, String.class, 1),
+    INITIAL_PASSWORD("initialPassword", false, String.class, 1),
 
     // Business Address
     BUSINESS_ADDRESS("businessAddress", false, Object.class, 1),
