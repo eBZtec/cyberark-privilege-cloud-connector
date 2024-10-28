@@ -14,8 +14,6 @@ import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.identityconnectors.framework.common.objects.filter.Filter;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,10 +96,6 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
 
     @Override
     public String update(Uid uid, Set<AttributeDelta> deltas) {
-
-        JSONObject currentCyberArkUser = getUserDetails(uid.getUidValue());
-
-        LOG.info("Current user {0}", currentCyberArkUser);
         return "";
     }
 
@@ -135,9 +129,7 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public void searchAll(ResultsHandler resultsHandler, OperationOptions options) {
-        Map<String, Object> query = new HashMap<>();
-
+    public void searchAll(ResultsHandler resultsHandler, OperationOptions options) {;
         List<JSONObject> users = cyberArkEndpoint.get(SEARCH_USERS_ENDPOINT, null, options);
 
         for(JSONObject user: users) {
