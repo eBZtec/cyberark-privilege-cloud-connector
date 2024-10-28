@@ -24,13 +24,15 @@ public interface IUserOperations {
 
     String update(Uid uid, Set<AttributeDelta> deltas);
 
+    JSONObject getUserDetails(String id);
+
     void delete(Uid uid);
 
-    void search(Filter filter, ResultsHandler resultsHandler);
+    void search(Filter filter, ResultsHandler resultsHandler, OperationOptions options);
 
-    void searchAll(ResultsHandler resultsHandler);
+    void searchAll(ResultsHandler resultsHandler, OperationOptions options);
 
-    void searchByFilter(Filter filter, ResultsHandler resultsHandler);
+    void searchByFilter(Filter filter, ResultsHandler resultsHandler, OperationOptions options);
 
     ConnectorObject translateToConnectorObject(JSONObject user);
 
