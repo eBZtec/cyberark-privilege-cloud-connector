@@ -4,169 +4,113 @@ import br.tec.ebz.connid.connector.cyberark.operations.UserOperations;
 import br.tec.ebz.connid.connector.cyberark.schema.UserSchemaAttributes;
 import br.tec.ebz.connid.connector.cyberark.utils.BasicTestConnection;
 import br.tec.ebz.connid.connector.cyberark.utils.GetUser;
+import br.tec.ebz.connid.connector.cyberark.utils.ListResultHandler;
 import org.identityconnectors.framework.api.ConnectorFacade;
-import org.identityconnectors.framework.common.objects.Attribute;
-import org.identityconnectors.framework.common.objects.AttributeBuilder;
-import org.identityconnectors.framework.common.objects.Uid;
+import org.identityconnectors.framework.common.exceptions.ConnectorException;
+import org.identityconnectors.framework.common.objects.*;
+import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SearchOpTest {
 
     private ConnectorFacade connectorFacade;
     private GetUser userTest;
+    private OperationOptions operationOptions;
 
     @BeforeTest
     public void init() {
         BasicTestConnection basicTestConnection = new BasicTestConnection();
         connectorFacade = basicTestConnection.getTestConnection();
+
+        Map<String, Object> options = new HashMap<>();
+        options.put(OperationOptions.OP_PAGE_SIZE, 5);
+        options.put(OperationOptions.OP_PAGED_RESULTS_OFFSET, 0);
+        operationOptions = new OperationOptions(options);
+
         userTest = new GetUser();
     }
 
     @Test
-    public void shouldCreateActiveUser() {
-        String userName = userTest.getUserName();
+    public void searchUserByUid() {
+        String uid = "44";
 
-        Set<Attribute> creationAttributes = new HashSet<>();
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.USERNAME.getAttribute(), userName));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.ENABLE_USER.getAttribute(), true));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.CHANGE_PASS_ON_NEXT_LOGON.getAttribute(), false));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.SUSPENDED.getAttribute(), false));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.PASSWORD_NEVER_EXPIRES.getAttribute(), true));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.DESCRIPTION.getAttribute(), "User created by CyberArk Connector"));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.INITIAL_PASSWORD.getAttribute(), "Smartwa123"));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.LOCATION.getAttribute(), "\\"));
+        ListResultHandler resultHandler = new ListResultHandler();
+        Attribute attribute = AttributeBuilder.build(Uid.NAME, uid);
+        EqualsFilter filter = new EqualsFilter(attribute);
 
-        List<String> vaultAuthorizations = new ArrayList<>();
-        vaultAuthorizations.add("AddSafes");
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.VAULT_AUTHORIZATION.getAttribute(), vaultAuthorizations));
+        connectorFacade.search(UserOperations.OBJECT_CLASS, filter, resultHandler, operationOptions);
 
-        List<String> unauthorized = new ArrayList<>();
-        unauthorized.add("PSMP");
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.UNAUTHORIZED_INTERFACES.getAttribute(), unauthorized));
+        AssertJUnit.assertNotNull(resultHandler);
+        AssertJUnit.assertEquals(1, resultHandler.getObjects().size());
+    }
 
-        List<String> authMethods = new ArrayList<>();
-        authMethods.add("AuthTypePass");
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.AUTHENTICATION_METHOD.getAttribute(), authMethods));
+    @Test
+    public void searchUserByName() {
+        String name = "createTestUser289";
 
-        // Business Address
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_STREET.getAttribute(),
-                "9999999"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_CITY.getAttribute(),
-                "Petah Tikva"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_STATE.getAttribute(),
-                "Petah Tikva"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_ZIP.getAttribute(),
-                "99999-999"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_COUNTRY.getAttribute(),
-                "Israel"
-        ));
-        // Internet
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.HOME_PAGE.getAttribute(),
-                "cyberark.com"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.HOME_EMAIL.getAttribute(),
-                "user@gmail.com"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.BUSINESS_EMAIL.getAttribute(),
-                "user@cyberark.com"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.OTHER_EMAIL.getAttribute(),
-                "user2@gmail.com"
-        ));
-        // Phones
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.HOME_NUMBER.getAttribute(),
-                "555123456"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.BUSINESS_NUMBER.getAttribute(),
-                "555145678"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.CELLULAR_NUMBER.getAttribute(),
-                "555109876"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.PAGER_NUMBER.getAttribute(),
-                "111111"
-        ));
-        //Personal details
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.STREET.getAttribute(),
-                "Dizzengof 56"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.CITY.getAttribute(),
-                "Tel Aviv"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.STATE.getAttribute(),
-                "Israel"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.ZIP.getAttribute(),
-                "123456"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.COUNTRY.getAttribute(),
-                "Israel"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.TITLE.getAttribute(),
-                "Mr. VIP"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.ORGANIZATION.getAttribute(),
-                "CyberArk"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.DEPARTMENT.getAttribute(),
-                "R&D"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.PROFESSION.getAttribute(),
-                "Software development"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.FIRST_NAME.getAttribute(),
-                "John"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.MIDDLE_NAME.getAttribute(),
-                "Doe"
-        ));
-        creationAttributes.add(AttributeBuilder.build(
-                UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.LAST_NAME.getAttribute(),
-                "Smith"
-        ));
+        ListResultHandler resultHandler = new ListResultHandler();
+        Attribute attribute = AttributeBuilder.build(Name.NAME, name);
+        EqualsFilter filter = new EqualsFilter(attribute);
 
-        Uid uid = connectorFacade.create(UserOperations.OBJECT_CLASS, creationAttributes, null);
+        connectorFacade.search(UserOperations.OBJECT_CLASS, filter, resultHandler, operationOptions);
 
-        AssertJUnit.assertNotNull(uid);
+        AssertJUnit.assertNotNull(resultHandler);
+        AssertJUnit.assertEquals(1, resultHandler.getObjects().size());
+    }
 
-        BasicTestConnection basicTestConnection2 = new BasicTestConnection();
-        ConnectorFacade connectorFacade2 = basicTestConnection2.getTestConnection();
+    @Test
+    public void searchUserByUserName() {
+        String name = "createTestUser802";
 
-        connectorFacade2.delete(UserOperations.OBJECT_CLASS, uid, null);
+        ListResultHandler resultHandler = new ListResultHandler();
+        Attribute attribute = AttributeBuilder.build(UserSchemaAttributes.USERNAME.getAttribute(), name);
+        EqualsFilter filter = new EqualsFilter(attribute);
+
+        connectorFacade.search(UserOperations.OBJECT_CLASS, filter, resultHandler, operationOptions);
+
+        AssertJUnit.assertNotNull(resultHandler);
+        AssertJUnit.assertEquals(1, resultHandler.getObjects().size());
+    }
+
+    @Test(expectedExceptions = ConnectorException.class)
+    public void searchRaiseUnsupportedException() {
+        String name = "Analyst";
+
+        ListResultHandler resultHandler = new ListResultHandler();
+        Attribute attribute = AttributeBuilder.build(UserSchemaAttributes.TITLE.getAttribute(), name);
+        EqualsFilter filter = new EqualsFilter(attribute);
+
+        connectorFacade.search(UserOperations.OBJECT_CLASS, filter, resultHandler, operationOptions);
+
+        AssertJUnit.assertNotNull(resultHandler);
+        AssertJUnit.assertEquals(1, resultHandler.getObjects().size());
+    }
+
+    @Test
+    public void searchUserDoesNotExists() {
+        String name = "createTestUser999999";
+
+        ListResultHandler resultHandler = new ListResultHandler();
+        Attribute attribute = AttributeBuilder.build(Name.NAME, name);
+        EqualsFilter filter = new EqualsFilter(attribute);
+
+        connectorFacade.search(UserOperations.OBJECT_CLASS, filter, resultHandler, operationOptions);
+
+        AssertJUnit.assertNotNull(resultHandler);
+        AssertJUnit.assertEquals(0, resultHandler.getObjects().size());
+    }
+
+    @Test
+    public void searchAllUsers() {
+        ListResultHandler resultHandler = new ListResultHandler();
+
+        connectorFacade.search(UserOperations.OBJECT_CLASS, null, resultHandler, operationOptions);
+
+        AssertJUnit.assertNotNull(resultHandler);
+        AssertJUnit.assertEquals(22, resultHandler.getObjects().size());
     }
 }
