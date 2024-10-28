@@ -26,7 +26,7 @@ public class CyberArkConfiguration extends AbstractConfiguration {
 
     private static final Log LOG = Log.getLog(CyberArkConfiguration.class);
 
-    private String domain = "";
+    private String server = "";
     private String user = "";
     private GuardedString password;
     private String method = "CyberArk";
@@ -35,7 +35,7 @@ public class CyberArkConfiguration extends AbstractConfiguration {
     public void validate() {
         String exceptionMsg = "";
 
-        if (domain.isEmpty() || domain.isBlank()) {
+        if (server.isEmpty() || server.isBlank()) {
             exceptionMsg = "Domain is required";
         } else if (user.isEmpty() || user.isBlank()) {
             exceptionMsg = "User is required";
@@ -53,12 +53,12 @@ public class CyberArkConfiguration extends AbstractConfiguration {
             helpMessageKey = "cyberark.config.domain.help",
             required = true
     )
-    public String getDomain() {
-        return domain;
+    public String getServer() {
+        return server;
     }
 
-    public void setDomain(String domain) {
-        this.domain = domain;
+    public void setServer(String server) {
+        this.server = server;
     }
 
     @ConfigurationProperty(
