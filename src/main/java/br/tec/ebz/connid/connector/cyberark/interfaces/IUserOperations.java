@@ -12,25 +12,25 @@ public interface IUserOperations {
 
     String type();
 
-    Uid create(Set<Attribute> attributeSet) throws URISyntaxException;
+    Uid create(Set<Attribute> attributeSet);
 
     void changePassword(String uid, GuardedString password);
 
-    void enableUser(String uid) throws URISyntaxException;
+    void enableUser(String uid);
 
-    void disableUser(String uid) throws URISyntaxException;
+    void disableUser(String uid);
 
-    void activateUser(String uid) throws URISyntaxException;
+    void activateUser(String uid);
 
     String update(Uid uid, Set<AttributeDelta> deltas);
 
-    void delete(Uid uid) throws URISyntaxException;
+    void delete(Uid uid);
 
-    void search(Filter filter, ResultsHandler resultsHandler) throws URISyntaxException;
+    void search(Filter filter, ResultsHandler resultsHandler);
 
-    void searchAll(ResultsHandler resultsHandler) throws URISyntaxException;
+    void searchAll(ResultsHandler resultsHandler);
 
-    void searchByFilter(Filter filter, ResultsHandler resultsHandler) throws URISyntaxException;
+    void searchByFilter(Filter filter, ResultsHandler resultsHandler);
 
     ConnectorObject translateToConnectorObject(JSONObject user);
 
