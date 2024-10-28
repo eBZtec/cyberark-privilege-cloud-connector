@@ -36,3 +36,5 @@ target
 /.run/
 /CHANGELOG.md
 /TODO.md
+
+test.properties
