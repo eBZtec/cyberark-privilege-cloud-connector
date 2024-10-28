@@ -2,13 +2,20 @@ package br.tec.ebz.connid.connector.cyberark;
 
 import com.evolveum.polygon.common.GuardedStringAccessor;
 import kong.unirest.core.HttpResponse;
+import kong.unirest.core.JsonNode;
 import kong.unirest.core.Unirest;
+import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
+import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
+import org.identityconnectors.framework.common.objects.OperationOptions;
 
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 
 public class CyberArkEndpoint {
@@ -55,6 +62,10 @@ public class CyberArkEndpoint {
 
         HttpResponse<kong.unirest.core.JsonNode> response = Unirest.post(url).header("Authorization", token).asJson();
         processResponseErrors(response);
+
+        Unirest.config().reset();
+
+        token = null;
     }
 
     private String getUrl(String endpoint) {
@@ -75,6 +86,14 @@ public class CyberArkEndpoint {
                 .enableCookieManagement(false);
     }
 
+    private String getAccessToken() {
+        if (token == null) {
+            logon();
+        }
+
+        return token;
+    }
+
     private void processResponseErrors(HttpResponse<?> response) {
         int statusCode = response.getStatus();
 
@@ -88,5 +107,92 @@ public class CyberArkEndpoint {
             throw new ConnectorException("The request requires user authentication.");
         }
 
+        if (statusCode == 400) {
+            throw new InvalidAttributeValueException("Could not process the request, reason: " + response.getBody());
+        }
+
+        throw new ConnectorException("Could not process the request, reason: " + response.getBody());
+    }
+
+    public HttpResponse<JsonNode> post(String endpoint, JSONObject body) {
+        String url = getUrl(endpoint);
+        HttpResponse<JsonNode> response = Unirest
+                .post(url)
+                .header("Authorization", getAccessToken())
+                .body(body)
+                .asJson();
+
+        processResponseErrors(response);
+
+        return response;
+    }
+
+    public void delete(String endpoint) {
+        String url = getUrl(endpoint);
+
+        HttpResponse<JsonNode> response = Unirest
+                .delete(url)
+                .header("Authorization", getAccessToken())
+                .asJson();
+
+        processResponseErrors(response);
+    }
+
+    public HttpResponse<JsonNode> get(String endpoint) {
+        String url = getUrl(endpoint);
+        HttpResponse<JsonNode> response = Unirest
+                .get(url)
+                .header("Authorization", getAccessToken())
+                .asJson();
+
+        processResponseErrors(response);
+
+        return response;
+    }
+
+    public List<JSONObject> get(String endpoint, Map<String, Object> query, OperationOptions options) {
+        boolean hasMoreData = true;
+        String url = getUrl(endpoint);
+        List<JSONObject> objects = new ArrayList<>();
+        int pageOffset = options.getPagedResultsOffset();
+        int pageSize = options.getPageSize();
+
+        while (hasMoreData) {
+            HttpResponse<JsonNode> response = Unirest
+                    .get(url)
+                    .header("Authorization", getAccessToken())
+                    .queryString("pageOffset", pageOffset)
+                    .queryString("pageSize", pageSize)
+                    .queryString(query)
+                    .asJson();
+            processResponseErrors(response);
+
+            JsonNode responseBody = response.getBody();
+            int total = responseBody.getObject().getInt("Total");
+
+            LOG.info("Total {0}", total);
+
+            if (total == 0) {
+                hasMoreData = false;
+            } else {
+                JSONArray users = responseBody.getObject().getJSONArray("Users");
+
+                for (int i = 0; i < users.length(); i++) {
+                    JSONObject user = users.getJSONObject(i);
+                    objects.add(user);
+                }
+                pageOffset += pageSize;
+
+                if (total == 1) {
+                    hasMoreData = false;
+                }
+            }
+
+            LOG.info("Offset {0}", pageOffset);
+        }
+
+        LOG.info("Found {0} objects", objects.size());
+
+        return objects;
     }
 }
