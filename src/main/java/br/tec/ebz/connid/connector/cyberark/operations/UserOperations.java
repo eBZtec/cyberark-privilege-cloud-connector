@@ -101,7 +101,13 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
 
     @Override
     public void delete(Uid uid) {
+        String endpoint = String.format(DELETE_USER_ENDPOINT, uid.getUidValue());
 
+        cyberArkEndpoint.delete(endpoint);
+
+        if (LOG.isOk()) {
+            LOG.ok("User {0} deleted successfully", uid.getUidValue());
+        }
     }
 
     @Override
