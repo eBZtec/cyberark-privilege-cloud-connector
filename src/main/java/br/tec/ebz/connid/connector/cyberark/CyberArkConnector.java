@@ -17,6 +17,7 @@
 package br.tec.ebz.connid.connector.cyberark;
 
 import br.tec.ebz.connid.connector.cyberark.operations.UserOperations;
+import org.identityconnectors.common.CollectionUtil;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.common.exceptions.ConnectionFailedException;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
@@ -26,15 +27,13 @@ import org.identityconnectors.framework.common.objects.filter.FilterTranslator;
 import org.identityconnectors.framework.spi.Configuration;
 import org.identityconnectors.framework.spi.Connector;
 import org.identityconnectors.framework.spi.ConnectorClass;
-import org.identityconnectors.framework.spi.operations.CreateOp;
-import org.identityconnectors.framework.spi.operations.DeleteOp;
-import org.identityconnectors.framework.spi.operations.SearchOp;
-import org.identityconnectors.framework.spi.operations.TestOp;
+import org.identityconnectors.framework.spi.operations.*;
 
+import java.util.List;
 import java.util.Set;
 
 @ConnectorClass(displayNameKey = "cyberark.connector.display", configurationClass = CyberArkConfiguration.class)
-public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<Filter>, DeleteOp {
+public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<Filter>, DeleteOp, UpdateDeltaOp {
 
     private static final Log LOG = Log.getLog(CyberArkConnector.class);
 
@@ -96,7 +95,12 @@ public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<
 
     @Override
     public FilterTranslator<Filter> createFilterTranslator(ObjectClass objectClass, OperationOptions options) {
-        return null;
+        return new FilterTranslator<Filter>() {
+            @Override
+            public List<Filter> translate(Filter filter) {
+                return CollectionUtil.newList(filter);
+            }
+        };
     }
 
     @Override
@@ -104,12 +108,12 @@ public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<
         try {
             if (objectClass.is(UserOperations.OBJECT_CLASS_NAME)) {
                 LOG.info("Starting process to create user");
-                userOperations.search(query, handler);
+                userOperations.search(query, handler, options);
             } else {
                 throw new UnsupportedOperationException("Object class " + objectClass.getObjectClassValue()+ " not supported");
             }
         } catch (Exception e) {
-            throw new ConnectorException("Could not create object class " + objectClass.getObjectClassValue() + ", reason: " + e.getMessage());
+            throw new ConnectorException("Could not search object class " + objectClass.getObjectClassValue() + ", reason: " + e.getMessage());
         }
     }
 
@@ -125,5 +129,17 @@ public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<
         } catch (Exception e) {
             throw new ConnectorException("Could not create object class " + objectClass.getObjectClassValue() + ", reason: " + e.getMessage());
         }
+    }
+
+    @Override
+    public Set<AttributeDelta> updateDelta(ObjectClass objectClass, Uid uid, Set<AttributeDelta> modifications, OperationOptions options) {
+        String newUid;
+
+        if (objectClass.is(UserOperations.OBJECT_CLASS_NAME)) {
+            newUid = userOperations.update(uid, modifications);
+        } else {
+            throw new UnsupportedOperationException("Object class " + objectClass.getObjectClassValue()+ " not supported");
+        }
+        return Set.of();
     }
 }
