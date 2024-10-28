@@ -3,10 +3,13 @@ package br.tec.ebz.connid.connector.cyberark.operations;
 import br.tec.ebz.connid.connector.cyberark.CyberArkEndpoint;
 import br.tec.ebz.connid.connector.cyberark.interfaces.IUserOperations;
 import br.tec.ebz.connid.connector.cyberark.schema.UserSchemaAttributes;
+import kong.unirest.core.HttpResponse;
+import kong.unirest.core.JsonNode;
 import kong.unirest.core.json.JSONObject;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
+import org.identityconnectors.framework.common.exceptions.UnknownUidException;
 import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.identityconnectors.framework.common.objects.filter.Filter;
@@ -43,8 +46,25 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public Uid create(Set<Attribute> attributeSet) throws URISyntaxException {
-        return null;
+    public Uid create(Set<Attribute> attributeSet) {
+
+        JSONObject body = buildJson(attributeSet);
+        LOG.info("JSON {0}", body.toString());
+        HttpResponse<JsonNode> response = cyberArkEndpoint.post(CREATE_USER_ENDPOINT, body);
+
+        if (LOG.isOk()) {
+            LOG.ok("User created successfully");
+        }
+
+        LOG.info("Response for user creation {0}", response.getBody().toString());
+
+        String uid = getId(response.getBody().getObject());
+
+        if (uid == null) {
+            throw new UnknownUidException("Could not determine UID from response " + response.getBody());
+        }
+
+        return new Uid(uid);
     }
 
     public String getId(JSONObject jsonObject) {
@@ -59,17 +79,17 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public void enableUser(String uid) throws URISyntaxException {
+    public void enableUser(String uid) {
 
     }
 
     @Override
-    public void disableUser(String uid) throws URISyntaxException {
+    public void disableUser(String uid) {
 
     }
 
     @Override
-    public void activateUser(String uid) throws URISyntaxException {
+    public void activateUser(String uid) {
 
     }
 
@@ -80,12 +100,12 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public void delete(Uid uid) throws URISyntaxException {
+    public void delete(Uid uid) {
 
     }
 
     @Override
-    public void search(Filter filter, ResultsHandler resultsHandler) throws URISyntaxException {
+    public void search(Filter filter, ResultsHandler resultsHandler) {
         if (filter != null) {
             searchByFilter(filter, resultsHandler);
         } else {
@@ -94,12 +114,12 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public void searchAll(ResultsHandler resultsHandler) throws URISyntaxException {
+    public void searchAll(ResultsHandler resultsHandler) {
 
     }
 
     @Override
-    public void searchByFilter(Filter filter, ResultsHandler resultsHandler) throws URISyntaxException {
+    public void searchByFilter(Filter filter, ResultsHandler resultsHandler) {
 
         if (filter instanceof EqualsFilter equalsFilter) {
             Attribute filterAttribute = equalsFilter.getAttribute();
