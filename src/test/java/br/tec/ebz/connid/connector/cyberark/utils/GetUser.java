@@ -17,7 +17,7 @@ public class GetUser {
     private long lastSuccessfullLoginDate;
 
     public GetUser() {
-        id = new Random().nextInt(500);
+        id = new Random().nextInt(1000);
         lastSuccessfullLoginDate = new Date().getTime();
 
         groups = new ArrayList<>();
