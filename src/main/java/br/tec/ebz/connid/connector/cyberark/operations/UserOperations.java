@@ -16,7 +16,9 @@ import org.identityconnectors.framework.common.objects.filter.Filter;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class UserOperations extends ObjectOperations implements IUserOperations {
@@ -96,7 +98,20 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
 
     @Override
     public String update(Uid uid, Set<AttributeDelta> deltas) {
+
+        JSONObject currentCyberArkUser = getUserDetails(uid.getUidValue());
+
+        LOG.info("Current user {0}", currentCyberArkUser);
         return "";
+    }
+
+    @Override
+    public JSONObject getUserDetails(String id) {
+        String endpoint = String.format(GET_USER_DETAILS, id);
+
+        HttpResponse<JsonNode> response = cyberArkEndpoint.get(endpoint);
+
+        return response.getBody().getObject();
     }
 
     @Override
@@ -111,23 +126,41 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public void search(Filter filter, ResultsHandler resultsHandler) {
+    public void search(Filter filter, ResultsHandler resultsHandler, OperationOptions options) {
         if (filter != null) {
-            searchByFilter(filter, resultsHandler);
+            searchByFilter(filter, resultsHandler, options);
         } else {
-            searchAll(resultsHandler);
+            searchAll(resultsHandler, options);
         }
     }
 
     @Override
-    public void searchAll(ResultsHandler resultsHandler) {
+    public void searchAll(ResultsHandler resultsHandler, OperationOptions options) {
+        Map<String, Object> query = new HashMap<>();
 
+        List<JSONObject> users = cyberArkEndpoint.get(SEARCH_USERS_ENDPOINT, null, options);
+
+        for(JSONObject user: users) {
+            String id = user.getString(UserSchemaAttributes.ID.getAttribute());
+            String userName = user.getString(UserSchemaAttributes.USERNAME.getAttribute());
+            LOG.info("UserName {0}", userName);
+
+            // Ignore Master user, for some reason it give status code 500
+            if (id.equals("0")) continue;
+
+            LOG.info("Searching by user {0}", id);
+
+            JSONObject userDetailed = getUserDetails(id);
+
+            resultsHandler.handle(translateToConnectorObject(userDetailed));
+        }
     }
 
     @Override
-    public void searchByFilter(Filter filter, ResultsHandler resultsHandler) {
+    public void searchByFilter(Filter filter, ResultsHandler resultsHandler, OperationOptions options) {
 
         if (filter instanceof EqualsFilter equalsFilter) {
+            LOG.info("Searching user by Equals filter");
             Attribute filterAttribute = equalsFilter.getAttribute();
 
             if (filterAttribute == null) {
@@ -148,38 +181,42 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
 
             if (attrName.equals(Uid.NAME)) {
                 LOG.info("Searching user by UID value");
-                int id = (int) filterValues.get(0);
+
+                JSONObject user = getUserDetails((String) filterValues.get(0));
+
+                if (user != null) {
+                    ConnectorObject connectorObject = translateToConnectorObject(user);
+                    resultsHandler.handle(connectorObject);
+                }
+
+            } else if(attrName.equals(Name.NAME)
+                    || attrName.equals(UserSchemaAttributes.USERNAME.getAttribute())
+                    || attrName.equals(UserSchemaAttributes.COMPONENT_USER.getAttribute())
+                    || attrName.equals(UserSchemaAttributes.USER_TYPE.getAttribute())
+            ) {
+                if (attrName.equals(Name.NAME)) {
+                    attrName = UserSchemaAttributes.USERNAME.getAttribute();
+                }
+
+                LOG.info("Searching users by attribute {0} and value {1}", attrName, filterValues.get(0));
+
+                Map<String, Object> query = new HashMap<>();
+                query.put(attrName, filterValues.get(0));
+
+                List<JSONObject> users = cyberArkEndpoint.get(SEARCH_USERS_ENDPOINT, query, options);
+
+                for(JSONObject user: users) {
+                    String id = user.getString(UserSchemaAttributes.ID.getAttribute());
+                    JSONObject userDetailed = getUserDetails(id);
+
+                    resultsHandler.handle(translateToConnectorObject(userDetailed));
+                }
             } else {
-                LOG.info("Searching user by other(s) value");
+                throw new UnsupportedOperationException("Could not search user, reason: Attribute " + attrName + " not supported");
             }
         } else {
             throw new UnsupportedOperationException("Could not search user, reason: Filter " + filter.getClass().getName() + " not supported");
         }
-
-    }
-
-    public String getEqualsFilter(String name, Object value) {
-        StringBuilder builder = new StringBuilder(name);
-
-        builder.append(" eq ");
-
-        if (value instanceof String) {
-            builder.append("'");
-        }
-        builder.append(value);
-        if (value instanceof String) {
-            builder.append("'");
-        }
-
-        return builder.toString();
-    }
-
-    public void getUsers(URI uri, ResultsHandler resultsHandler) throws URISyntaxException {
-        LOG.info("Search users URI {0}", uri.toString());
-
-    }
-
-    public void getUserDetailsById(int id, ResultsHandler resultsHandler) throws URISyntaxException {
 
     }
 
@@ -435,7 +472,8 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
                         UserSchemaAttributes.GROUPS_MEMBERSHIP.getAttribute(),
                         UserSchemaAttributes.GROUPS_MEMBERSHIP.getType(),
                         null,
-                        AttributeInfo.Flags.NOT_UPDATEABLE
+                        AttributeInfo.Flags.NOT_UPDATEABLE,
+                        AttributeInfo.Flags.NOT_CREATABLE
                 )
         );
         objectClassInfoBuilder.addAttributeInfo(
