@@ -19,8 +19,6 @@ package br.tec.ebz.connid.connector.cyberark;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.framework.common.exceptions.ConfigurationException;
 
-import java.net.URISyntaxException;
-
 public class CyberArkConnection {
 
     private static final Log LOG = Log.getLog(CyberArkConnection.class);
@@ -28,7 +26,7 @@ public class CyberArkConnection {
     private final CyberArkConfiguration configuration;
     private final CyberArkEndpoint cyberArkEndpoint;
 
-    public CyberArkConnection(CyberArkConfiguration configuration) throws URISyntaxException {
+    public CyberArkConnection(CyberArkConfiguration configuration) {
         this.configuration = configuration;
         this.cyberArkEndpoint = new CyberArkEndpoint(configuration);
     }
@@ -46,7 +44,7 @@ public class CyberArkConnection {
             cyberArkEndpoint.logoff();
             LOG.ok("User logged off successfully");
         } catch (Exception e) {
-            throw new ConfigurationException("Could not logoff user, reason: {0}", e);
+            throw new ConfigurationException("Could not logoff user, reason: " + e.getMessage());
         }
     }
 }
