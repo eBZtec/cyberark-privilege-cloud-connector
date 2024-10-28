@@ -13,7 +13,7 @@ public class PropertiesReader {
 
     private static final Properties PROPERTIES = new Properties();
 
-    private static final String PROPERTIES_FILE = "/properties/test.properties";
+    private static final String PROPERTIES_FILE = "/properties/test_dev.properties";
     private static final String DOMAIN = "domain";
     private static final String USER = "user";
     private static final String PASSWORD = "password";
