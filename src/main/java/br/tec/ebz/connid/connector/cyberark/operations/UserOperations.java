@@ -327,7 +327,6 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         getNameIfExists(user, UserSchemaAttributes.USERNAME.getAttribute(), UserSchemaAttributes.USERNAME.getType(), connectorObjectBuilder);
         getUidIfExists(user, UserSchemaAttributes.ID.getAttribute(), UserSchemaAttributes.ID.getType(), connectorObjectBuilder);
 
-        getIfExists(user, UserSchemaAttributes.USERNAME.getAttribute(), UserSchemaAttributes.USERNAME.getType(), connectorObjectBuilder);
         getIfExists(user, UserSchemaAttributes.SOURCE.getAttribute(), UserSchemaAttributes.SOURCE.getType(), connectorObjectBuilder);
         getIfExists(user, UserSchemaAttributes.USER_TYPE.getAttribute(), UserSchemaAttributes.USER_TYPE.getType(), connectorObjectBuilder);
         getIfExists(user, UserSchemaAttributes.GROUPS_MEMBERSHIP.getAttribute(), UserSchemaAttributes.GROUPS_MEMBERSHIP.getType(), connectorObjectBuilder);
@@ -569,7 +568,7 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
                         UserSchemaAttributes.GROUPS_MEMBERSHIP.getAttribute(),
-                        UserSchemaAttributes.GROUPS_MEMBERSHIP.getType(),
+                        String.class,
                         null,
                         AttributeInfo.Flags.NOT_UPDATEABLE,
                         AttributeInfo.Flags.NOT_CREATABLE
@@ -578,8 +577,9 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
                         UserSchemaAttributes.VAULT_AUTHORIZATION.getAttribute(),
-                        UserSchemaAttributes.VAULT_AUTHORIZATION.getType(),
-                        null
+                        String.class,
+                        null,
+                        AttributeInfo.Flags.MULTIVALUED
                 )
         );
         objectClassInfoBuilder.addAttributeInfo(
@@ -634,7 +634,7 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
                         UserSchemaAttributes.UNAUTHORIZED_INTERFACES.getAttribute(),
-                        UserSchemaAttributes.UNAUTHORIZED_INTERFACES.getType(),
+                        String.class,
                         null,
                         AttributeInfo.Flags.MULTIVALUED
                 )
@@ -642,7 +642,7 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
                         UserSchemaAttributes.AUTHENTICATION_METHOD.getAttribute(),
-                        UserSchemaAttributes.AUTHENTICATION_METHOD.getType(),
+                        String.class,
                         null,
                         AttributeInfo.Flags.MULTIVALUED
                 )
@@ -747,28 +747,28 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         );
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
-                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.BUSINESS_NUMBER.getAttribute(),
+                        UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.BUSINESS_NUMBER.getAttribute(),
                         UserSchemaAttributes.BUSINESS_NUMBER.getType(),
                         null
                 )
         );
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
-                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.CELLULAR_NUMBER.getAttribute(),
+                        UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.CELLULAR_NUMBER.getAttribute(),
                         UserSchemaAttributes.CELLULAR_NUMBER.getType(),
                         null
                 )
         );
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
-                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.FAX_NUMBER.getAttribute(),
+                        UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.FAX_NUMBER.getAttribute(),
                         UserSchemaAttributes.FAX_NUMBER.getType(),
                         null
                 )
         );
         objectClassInfoBuilder.addAttributeInfo(
                 buildAttributeInfo(
-                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.PAGER_NUMBER.getAttribute(),
+                        UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.PAGER_NUMBER.getAttribute(),
                         UserSchemaAttributes.PAGER_NUMBER.getType(),
                         null
                 )
