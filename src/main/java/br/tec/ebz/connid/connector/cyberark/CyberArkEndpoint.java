@@ -167,8 +167,12 @@ public class CyberArkEndpoint {
         boolean hasMoreData = true;
         String url = getUrl(endpoint);
         List<JSONObject> objects = new ArrayList<>();
-        int pageOffset = options.getPagedResultsOffset();
-        int pageSize = options.getPageSize();
+        int pageOffset = 0;
+        int pageSize = 200;
+
+        if (options.getPageSize() != null) {
+            pageSize = options.getPageSize();
+        }
 
         while (hasMoreData) {
             HttpResponse<JsonNode> response = Unirest
