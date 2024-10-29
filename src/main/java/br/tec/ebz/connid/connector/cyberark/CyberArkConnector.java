@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 @ConnectorClass(displayNameKey = "cyberark.connector.display", configurationClass = CyberArkConfiguration.class)
-public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<Filter>, DeleteOp, UpdateDeltaOp {
+public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<Filter>, DeleteOp, UpdateDeltaOp, SchemaOp {
 
     private static final Log LOG = Log.getLog(CyberArkConnector.class);
 
@@ -141,5 +141,17 @@ public class CyberArkConnector implements Connector, TestOp, CreateOp, SearchOp<
             throw new UnsupportedOperationException("Object class " + objectClass.getObjectClassValue()+ " not supported");
         }
         return Set.of();
+    }
+
+    @Override
+    public Schema schema() {
+        SchemaBuilder schemaBuilder = new SchemaBuilder(CyberArkConnector.class);
+
+        schemaBuilder.defineObjectClass(userOperations.schema());
+
+        schemaBuilder.defineOperationOption(OperationOptionInfoBuilder.buildPageSize(), SearchOp.class);
+        schemaBuilder.defineOperationOption(OperationOptionInfoBuilder.buildPagedResultsOffset(), SearchOp.class);
+
+        return schemaBuilder.build();
     }
 }
