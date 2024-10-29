@@ -13,7 +13,6 @@ import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueE
 import org.identityconnectors.framework.common.objects.OperationOptions;
 
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +78,7 @@ public class CyberArkEndpoint {
     }
 
     private void initHttpClient() {
+        Unirest.config().reset();
         Unirest.config()
                 .connectTimeout(1000)
                 .setDefaultHeader("content-type", "application/json")
