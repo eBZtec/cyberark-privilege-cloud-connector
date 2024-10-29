@@ -5,6 +5,7 @@ import br.tec.ebz.connid.connector.cyberark.interfaces.IUserOperations;
 import br.tec.ebz.connid.connector.cyberark.schema.UserSchemaAttributes;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
+import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
@@ -14,10 +15,7 @@ import org.identityconnectors.framework.common.objects.*;
 import org.identityconnectors.framework.common.objects.filter.EqualsFilter;
 import org.identityconnectors.framework.common.objects.filter.Filter;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class UserOperations extends ObjectOperations implements IUserOperations {
 
@@ -33,6 +31,7 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     private static final String DELETE_USER_ENDPOINT = "/PasswordVault/API/Users/%s/";
     private static final String SEARCH_USERS_ENDPOINT = "/PasswordVault/API/Users/";
     private static final String GET_USER_DETAILS = "/PasswordVault/API/Users/%s/";
+    private static final String UPDATE_USER_ENDPOINT = "/PasswordVault/API/Users/%s/";
 
     private final CyberArkEndpoint cyberArkEndpoint;
 
@@ -96,7 +95,120 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
 
     @Override
     public String update(Uid uid, Set<AttributeDelta> deltas) {
-        return "";
+        String uidValue = uid.getUidValue();
+        LOG.info("Starting process to update user {0}", uidValue);
+
+        JSONObject oldUser = getUserDetails(uidValue);
+
+        if (oldUser == null) {
+            throw new UnknownUidException("Could not find user with ID " + uidValue+ ", reason: user not found");
+        }
+
+        for (AttributeDelta modifications: deltas) {
+            JSONObject current = oldUser;
+            String attributeName = modifications.getName();
+            final String[] attributePath = attributeName.split("\\.");
+
+            for (int i = 0; i < attributePath.length - 1; i++) {
+                if (!current.has(attributePath[i])) {
+                    JSONObject child = new JSONObject();
+                    current.put(attributePath[i], child);
+                    current = child;
+                } else {
+                    current = current.getJSONObject(attributePath[i]);
+                }
+            }
+
+            String key = attributePath[attributePath.length - 1];
+            UserSchemaAttributes userSchemaAttribute = UserSchemaAttributes.findAttribute(key);
+
+            if (userSchemaAttribute == null)  continue;
+
+            if (modifications.getValuesToReplace() != null) {
+                List<Object> valuesToReplace = modifications.getValuesToReplace();
+
+                if (List.class.equals(userSchemaAttribute.getType())) {
+                    current.put(key, valuesToReplace);
+                } else {
+                    Object singleValue = AttributeDeltaUtil.getSingleValue(modifications);
+                    current.put(key, singleValue);
+                }
+            }
+
+            if (modifications.getValuesToAdd() != null) {
+                List<Object> valuesToAdd = modifications.getValuesToAdd();
+
+                if (List.class.equals(userSchemaAttribute.getType())) {
+                    final Set<String> currentValues;
+                    JSONArray mergedValues = new JSONArray();
+
+                    if (!current.has(key)) {
+                        currentValues = Collections.emptySet();
+                    } else {
+                        currentValues = new LinkedHashSet(current.getJSONArray(key).toList());
+                    }
+
+                    for (Object object: currentValues) {
+                        mergedValues.put(object);
+                    }
+
+                    for (Object object: valuesToAdd) {
+                        if (currentValues.contains(object)) {
+                            mergedValues.put(object);
+                        }
+                    }
+
+                    current.put(key, mergedValues);
+                } else {
+                    Object singleValue = AttributeDeltaUtil.getSingleValue(modifications);
+                    current.put(key, singleValue);
+                }
+            }
+
+            if (modifications.getValuesToRemove() != null) {
+                List<Object> valuesToRemove = modifications.getValuesToRemove();
+
+                if (List.class.equals(userSchemaAttribute.getType())) {
+                    final Set<String> currentValues;
+                    JSONArray mergedValues = new JSONArray();
+
+                    if (!current.has(key)) {
+                        currentValues = Collections.emptySet();
+                    } else {
+                        currentValues = new LinkedHashSet(current.getJSONArray(key).toList());
+                    }
+
+                    for (Object object: currentValues) {
+                        if (!valuesToRemove.contains(object)) {
+                            mergedValues.put(object);
+                        }
+                    }
+                    current.put(key, mergedValues);
+
+                } else {
+                    current.put(key, JSONObject.NULL);
+                }
+            }
+        }
+
+        String endpoint = String.format(UPDATE_USER_ENDPOINT, uidValue);
+
+        if (oldUser.has(UserSchemaAttributes.EXPIRY_DATE.getAttribute())) {
+            long expireDate = oldUser.getLong(UserSchemaAttributes.EXPIRY_DATE.getAttribute());
+
+            if (expireDate < 0) {
+                oldUser.remove(UserSchemaAttributes.EXPIRY_DATE.getAttribute());
+            }
+        }
+        HttpResponse<JsonNode> response = cyberArkEndpoint.put(endpoint, oldUser);
+
+        String currentId = getId(response.getBody().getObject());
+
+        if (currentId == null) {
+            throw new UnknownUidException("Could not determine UID from response " + response.getBody());
+        }
+
+        return currentId;
     }
 
     @Override
@@ -134,16 +246,11 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
 
         for(JSONObject user: users) {
             String id = user.getString(UserSchemaAttributes.ID.getAttribute());
-            String userName = user.getString(UserSchemaAttributes.USERNAME.getAttribute());
-            LOG.info("UserName {0}", userName);
 
-            // Ignore Master user, for some reason it give status code 500
+            // Ignore Master user, for some reason it returns status code 500
             if (id.equals("0")) continue;
 
-            LOG.info("Searching by user {0}", id);
-
             JSONObject userDetailed = getUserDetails(id);
-
             resultsHandler.handle(translateToConnectorObject(userDetailed));
         }
     }

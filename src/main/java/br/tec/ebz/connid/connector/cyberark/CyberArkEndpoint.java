@@ -127,6 +127,19 @@ public class CyberArkEndpoint {
         return response;
     }
 
+    public HttpResponse<JsonNode> put(String endpoint, JSONObject body) {
+        String url = getUrl(endpoint);
+        HttpResponse<JsonNode> response = Unirest
+                .put(url)
+                .header("Authorization", getAccessToken())
+                .body(body)
+                .asJson();
+
+        processResponseErrors(response);
+
+        return response;
+    }
+
     public void delete(String endpoint) {
         String url = getUrl(endpoint);
 
@@ -170,8 +183,6 @@ public class CyberArkEndpoint {
             JsonNode responseBody = response.getBody();
             int total = responseBody.getObject().getInt("Total");
 
-            LOG.info("Total {0}", total);
-
             if (total == 0) {
                 hasMoreData = false;
             } else {
@@ -187,8 +198,6 @@ public class CyberArkEndpoint {
                     hasMoreData = false;
                 }
             }
-
-            LOG.info("Offset {0}", pageOffset);
         }
 
         LOG.info("Found {0} objects", objects.size());

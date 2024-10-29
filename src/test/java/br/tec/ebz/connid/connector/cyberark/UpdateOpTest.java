@@ -28,8 +28,28 @@ public class UpdateOpTest {
     }
 
     @Test
-    public void shouldCreateActiveUser() {
-        String userName = userTest.getUserName();
+    public void shouldUpdateUser() {
+        Set<AttributeDelta> attributes = new HashSet<>();
+
+        AttributeDeltaBuilder attr1 = new AttributeDeltaBuilder();
+        attr1.setName(UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.HOME_EMAIL.getAttribute());
+        attr1.addValueToReplace("newemail2@gmail.com");
+
+        AttributeDeltaBuilder attr2 = new AttributeDeltaBuilder();
+        attr2.setName(UserSchemaAttributes.ENABLE_USER.getAttribute());
+        attr2.addValueToReplace(true);
+
+        AttributeDeltaBuilder attr3 = new AttributeDeltaBuilder();
+        attr3.setName(UserSchemaAttributes.UNAUTHORIZED_INTERFACES.getAttribute());
+        List<String> unauthorizedInterfaces = new ArrayList<>();
+        unauthorizedInterfaces.add("PSMP");
+        attr3.addValueToRemove(unauthorizedInterfaces);
+
+        attributes.add(attr1.build());
+        attributes.add(attr2.build());
+        attributes.add(attr3.build());
+
+        Set<AttributeDelta> attributeDeltas = connectorFacade.updateDelta(UserOperations.OBJECT_CLASS, new Uid("44"), attributes, null);
 
 
     }
