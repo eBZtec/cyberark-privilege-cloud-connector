@@ -589,6 +589,274 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
                         null
                 )
         );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.COMPONENT_USER.getAttribute(),
+                        UserSchemaAttributes.COMPONENT_USER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.ENABLE_USER.getAttribute(),
+                        UserSchemaAttributes.ENABLE_USER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.CHANGE_PASS_ON_NEXT_LOGON.getAttribute(),
+                        UserSchemaAttributes.CHANGE_PASS_ON_NEXT_LOGON.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.EXPIRY_DATE.getAttribute(),
+                        UserSchemaAttributes.EXPIRY_DATE.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.SUSPENDED.getAttribute(),
+                        UserSchemaAttributes.SUSPENDED.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.LAST_SUCCESSFUL_LOGIN_DATE.getAttribute(),
+                        UserSchemaAttributes.LAST_SUCCESSFUL_LOGIN_DATE.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.UNAUTHORIZED_INTERFACES.getAttribute(),
+                        UserSchemaAttributes.UNAUTHORIZED_INTERFACES.getType(),
+                        null,
+                        AttributeInfo.Flags.MULTIVALUED
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.AUTHENTICATION_METHOD.getAttribute(),
+                        UserSchemaAttributes.AUTHENTICATION_METHOD.getType(),
+                        null,
+                        AttributeInfo.Flags.MULTIVALUED
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PASSWORD_NEVER_EXPIRES.getAttribute(),
+                        UserSchemaAttributes.PASSWORD_NEVER_EXPIRES.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.DISTINGUISHED_NAME.getAttribute(),
+                        UserSchemaAttributes.DISTINGUISHED_NAME.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.DESCRIPTION.getAttribute(),
+                        UserSchemaAttributes.DESCRIPTION.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INITIAL_PASSWORD.getAttribute(),
+                        UserSchemaAttributes.INITIAL_PASSWORD.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_STREET.getAttribute(),
+                        UserSchemaAttributes.WORK_STREET.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_CITY.getAttribute(),
+                        UserSchemaAttributes.WORK_CITY.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_STATE.getAttribute(),
+                        UserSchemaAttributes.WORK_STATE.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_ZIP.getAttribute(),
+                        UserSchemaAttributes.WORK_ZIP.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.BUSINESS_ADDRESS.getAttribute() + "." + UserSchemaAttributes.WORK_COUNTRY.getAttribute(),
+                        UserSchemaAttributes.WORK_STREET.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.HOME_PAGE.getAttribute(),
+                        UserSchemaAttributes.HOME_PAGE.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.HOME_EMAIL.getAttribute(),
+                        UserSchemaAttributes.HOME_EMAIL.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.BUSINESS_EMAIL.getAttribute(),
+                        UserSchemaAttributes.BUSINESS_EMAIL.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.OTHER_EMAIL.getAttribute(),
+                        UserSchemaAttributes.OTHER_EMAIL.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PHONES.getAttribute() + "." + UserSchemaAttributes.HOME_NUMBER.getAttribute(),
+                        UserSchemaAttributes.HOME_NUMBER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.BUSINESS_NUMBER.getAttribute(),
+                        UserSchemaAttributes.BUSINESS_NUMBER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.CELLULAR_NUMBER.getAttribute(),
+                        UserSchemaAttributes.CELLULAR_NUMBER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.FAX_NUMBER.getAttribute(),
+                        UserSchemaAttributes.FAX_NUMBER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.INTERNET.getAttribute() + "." + UserSchemaAttributes.PAGER_NUMBER.getAttribute(),
+                        UserSchemaAttributes.PAGER_NUMBER.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.STREET.getAttribute(),
+                        UserSchemaAttributes.STREET.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.CITY.getAttribute(),
+                        UserSchemaAttributes.CITY.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.STATE.getAttribute(),
+                        UserSchemaAttributes.STATE.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.ZIP.getAttribute(),
+                        UserSchemaAttributes.ZIP.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.COUNTRY.getAttribute(),
+                        UserSchemaAttributes.COUNTRY.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.TITLE.getAttribute(),
+                        UserSchemaAttributes.TITLE.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.ORGANIZATION.getAttribute(),
+                        UserSchemaAttributes.ORGANIZATION.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.DEPARTMENT.getAttribute(),
+                        UserSchemaAttributes.DEPARTMENT.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.PROFESSION.getAttribute(),
+                        UserSchemaAttributes.PROFESSION.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.FIRST_NAME.getAttribute(),
+                        UserSchemaAttributes.FIRST_NAME.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.MIDDLE_NAME.getAttribute(),
+                        UserSchemaAttributes.MIDDLE_NAME.getType(),
+                        null
+                )
+        );
+        objectClassInfoBuilder.addAttributeInfo(
+                buildAttributeInfo(
+                        UserSchemaAttributes.PERSONAL_DETAILS.getAttribute() + "." + UserSchemaAttributes.LAST_NAME.getAttribute(),
+                        UserSchemaAttributes.STREET.getType(),
+                        null
+                )
+        );
 
         return objectClassInfoBuilder.build();
     }
