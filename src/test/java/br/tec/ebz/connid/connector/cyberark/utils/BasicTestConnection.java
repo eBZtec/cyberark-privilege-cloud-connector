@@ -25,6 +25,10 @@ public class BasicTestConnection {
             configuration.setMethod(propertiesReader.getMethod());
         }
 
+        if (propertiesReader.getVerifySsl() != null) {
+            configuration.setVerifySsl(propertiesReader.getVerifySsl());
+        }
+
         return getTestConnection(configuration);
     }
 
