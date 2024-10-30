@@ -82,7 +82,7 @@ public class CyberArkEndpoint {
         Unirest.config()
                 .connectTimeout(1000)
                 .setDefaultHeader("content-type", "application/json")
-                .verifySsl(false)
+                .verifySsl(configuration.getVerifySsl())
                 .enableCookieManagement(false);
     }
 
