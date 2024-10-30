@@ -1,6 +1,7 @@
 package br.tec.ebz.connid.connector.cyberark.operations;
 
 import br.tec.ebz.connid.connector.cyberark.schema.UserSchemaAttributes;
+import com.evolveum.polygon.common.GuardedStringAccessor;
 import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
 import org.identityconnectors.common.logging.Log;
@@ -21,6 +22,16 @@ public class ObjectOperations {
 
         for (Attribute attribute: attributes) {
             String attributeName = attribute.getName();
+            String attributeNameNative = attribute.getName();
+
+            if (attributeName.equals(OperationalAttributes.PASSWORD_NAME)) {
+                attributeName = UserSchemaAttributes.INITIAL_PASSWORD.getAttribute();
+            }
+
+            if (attributeName.equals(Name.NAME)) {
+                attributeName = UserSchemaAttributes.USERNAME.getAttribute();
+            }
+
             String[] attributePath = attributeName.split("\\.");
 
             JSONObject current = json;
@@ -40,10 +51,32 @@ public class ObjectOperations {
 
             if (userSchemaAttribute == null)  continue;
 
-            current.put(key, getAttributeValue(attributeName, userSchemaAttribute.getType(), attributes));
+            if (!attributeName.equals(UserSchemaAttributes.INITIAL_PASSWORD.getAttribute())) {
+                current.put(key, getAttributeValue(attributeNameNative, userSchemaAttribute.getType(), attributes));
+            } else {
+                String value = getGuardedStringValue(OperationalAttributes.PASSWORD_NAME, attributes);
+                current.put(key, value);
+            }
         }
 
         return json;
+    }
+
+    protected String getGuardedStringValue(String name, Set<Attribute> attributes) {
+        LOG.ok("Processing guarded string attribute {0}", name);
+
+        Attribute attr = AttributeUtil.find(name, attributes);
+
+        if (attr == null) {
+            return null;
+        }
+
+        GuardedString guardedString = AttributeUtil.getGuardedStringValue(attr);
+        GuardedStringAccessor accessor = new GuardedStringAccessor();
+
+        guardedString.access(accessor);
+
+        return accessor.getClearString();
     }
 
 
