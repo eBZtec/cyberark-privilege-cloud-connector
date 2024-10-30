@@ -4,10 +4,9 @@ import br.tec.ebz.connid.connector.cyberark.operations.UserOperations;
 import br.tec.ebz.connid.connector.cyberark.schema.UserSchemaAttributes;
 import br.tec.ebz.connid.connector.cyberark.utils.BasicTestConnection;
 import br.tec.ebz.connid.connector.cyberark.utils.GetUser;
+import org.identityconnectors.common.security.GuardedString;
 import org.identityconnectors.framework.api.ConnectorFacade;
-import org.identityconnectors.framework.common.objects.Attribute;
-import org.identityconnectors.framework.common.objects.AttributeBuilder;
-import org.identityconnectors.framework.common.objects.Uid;
+import org.identityconnectors.framework.common.objects.*;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
@@ -31,13 +30,13 @@ public class CreateOpTest {
         String userName = userTest.getUserName();
 
         Set<Attribute> creationAttributes = new HashSet<>();
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.USERNAME.getAttribute(), userName));
+        creationAttributes.add(AttributeBuilder.build(Name.NAME, userName));
         creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.ENABLE_USER.getAttribute(), true));
         creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.CHANGE_PASS_ON_NEXT_LOGON.getAttribute(), false));
         creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.SUSPENDED.getAttribute(), false));
         creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.PASSWORD_NEVER_EXPIRES.getAttribute(), true));
         creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.DESCRIPTION.getAttribute(), "User created by CyberArk Connector"));
-        creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.INITIAL_PASSWORD.getAttribute(), "Smartwa123"));
+        creationAttributes.add(AttributeBuilder.build(OperationalAttributes.PASSWORD_NAME, new GuardedString("Smartway123".toCharArray())));
         creationAttributes.add(AttributeBuilder.build(UserSchemaAttributes.LOCATION.getAttribute(), "\\"));
 
         List<String> vaultAuthorizations = new ArrayList<>();
@@ -161,9 +160,9 @@ public class CreateOpTest {
 
         AssertJUnit.assertNotNull(uid);
 
-        BasicTestConnection basicTestConnection2 = new BasicTestConnection();
-        ConnectorFacade connectorFacade2 = basicTestConnection2.getTestConnection();
+//        BasicTestConnection basicTestConnection2 = new BasicTestConnection();
+//        ConnectorFacade connectorFacade2 = basicTestConnection2.getTestConnection();
 
-        connectorFacade2.delete(UserOperations.OBJECT_CLASS, uid, null);
+        //connectorFacade2.delete(UserOperations.OBJECT_CLASS, uid, null);
     }
 }
