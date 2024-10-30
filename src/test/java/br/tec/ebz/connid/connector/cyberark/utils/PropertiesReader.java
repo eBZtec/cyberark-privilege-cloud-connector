@@ -18,6 +18,7 @@ public class PropertiesReader {
     private static final String USER = "user";
     private static final String PASSWORD = "password";
     private static final String METHOD= "method";
+    private static final String VERIFY_SSL = "verifySsl";
 
     public PropertiesReader() {
         try {
@@ -29,6 +30,10 @@ public class PropertiesReader {
         } catch (NullPointerException e) {
             LOG.error(e, "Properties file not found", e.getLocalizedMessage());
         }
+    }
+
+    public Boolean getVerifySsl() {
+        return Boolean.parseBoolean( (String) PROPERTIES.get(VERIFY_SSL));
     }
 
     public String getDomain() { return (String) PROPERTIES.get(DOMAIN); }
