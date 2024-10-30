@@ -1,6 +1,6 @@
 # CyberArk Privilege Cloud Connector
 
-Connector to provisioning Users and Groups for CyberArk Privilege Cloud.
+Connector to provisioning Users for CyberArk Privilege Cloud.
 
 ## Capabilities and Features
 
@@ -29,8 +29,8 @@ To read more, please go to [REST API | CyberArk Docs](https://docs.cyberark.com/
 
 ## Limitations
 
-* Users filters are limited to the API, only for userType, componentUser and userName
-* Only Users are being manage and provisioning for the connector
+* Users filters are limited to userType, componentUser and userName
+* Only Users are being manage and provisioning for the connector (for now)
 
 ## Future
 
@@ -38,3 +38,63 @@ To read more, please go to [REST API | CyberArk Docs](https://docs.cyberark.com/
 
 ***
 
+## Resource
+
+### Configuration
+
+Those attributes are used by the connector to authenticate on Privilege Cloud and generate the Access Token.
+
+| Attribute              | Required | Default  | Description                                                |
+|------------------------|----------|----------|------------------------------------------------------------|
+| Server                 | YES      |          | Server address. Eg: acme.privilegecloud.cyberark.com       |
+| Username               | YES      |          | The name of the user who is logging in to Privilege Cloud  |
+| Password               | YES      |          | The password used by the user to log in to Privilege Cloud |
+| Authentication Methods | NO       | CyberArk | This method authenticates a user to Privilege Cloud        |
+| Verify SSL             | NO       | true     | Enforce SSL                                                |
+
+
+### Permissions
+
+The service user used to manage the objects on Privilege Cloud must have the following permissions:
+
+- Audit Users
+- Add Users/Update Users
+- Activate User
+- Reset Users Passwords 
+
+IMPORTANT: The user who runs this Web service must be in the same Vault Location or higher as the user whose password is being reset
+
+### Build
+
+#### Maven
+
+* download CyberArk Privilege Cloud connector source code from Github
+* build connector with maven:
+```
+mvn clean install -DskipTests=true
+```
+* find connector-cyberark-{version}.jar in ```/target``` folder
+
+### Installation
+
+* put org.connid.bundles.unix-{version}.jar to ```{midPoint_home}/icf-connectors/``` or ```{midPoint_home}/connid-connectors/``` directory
+
+### Run tests
+
+Fill out the properties file ```src/test/resoruces/test.properties``` with your CyberArk environment:
+
+```
+domain=<host>
+user=<user>
+password=<password>
+
+# Optional
+# method=RADIUS
+# Can be: CyberArk, LDAP or RADIUS
+```
+
+and then run:
+
+```bash
+mvn clean install
+```
