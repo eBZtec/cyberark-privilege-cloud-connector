@@ -30,6 +30,7 @@ public class CyberArkConfiguration extends AbstractConfiguration {
     private String user = "";
     private GuardedString password;
     private String method = "CyberArk";
+    private Boolean verifySsl = true;
 
     @Override
     public void validate() {
@@ -51,7 +52,8 @@ public class CyberArkConfiguration extends AbstractConfiguration {
     @ConfigurationProperty(
             displayMessageKey = "cyberark.config.domain",
             helpMessageKey = "cyberark.config.domain.help",
-            required = true
+            required = true,
+            order = 1
     )
     public String getServer() {
         return server;
@@ -64,7 +66,8 @@ public class CyberArkConfiguration extends AbstractConfiguration {
     @ConfigurationProperty(
             displayMessageKey = "cyberark.config.user",
             helpMessageKey = "cyberark.config.user.help",
-            required = true
+            required = true,
+            order = 2
     )
     public String getUser() {
         return user;
@@ -78,7 +81,8 @@ public class CyberArkConfiguration extends AbstractConfiguration {
             displayMessageKey = "cyberark.config.password",
             helpMessageKey = "cyberark.config.password.help",
             required = true,
-            confidential = true
+            confidential = true,
+            order = 3
     )
     public GuardedString getPassword() {
         return password;
@@ -91,7 +95,7 @@ public class CyberArkConfiguration extends AbstractConfiguration {
     @ConfigurationProperty(
             displayMessageKey = "cyberark.config.method",
             helpMessageKey = "cyberark.config.method.help",
-            required = true
+            order = 4
     )
     public String getMethod() {
         return method;
@@ -99,5 +103,18 @@ public class CyberArkConfiguration extends AbstractConfiguration {
 
     public void setMethod(String method) {
         this.method = method;
+    }
+
+    @ConfigurationProperty(
+            displayMessageKey = "cyberark.config.verifySsl",
+            helpMessageKey = "cyberark.config.verifySsl.help",
+            order = 5
+    )
+    public Boolean getVerifySsl() {
+        return verifySsl;
+    }
+
+    public void setVerifySsl(Boolean verifySsl) {
+        this.verifySsl = verifySsl;
     }
 }
