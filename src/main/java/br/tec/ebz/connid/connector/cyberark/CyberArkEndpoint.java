@@ -8,6 +8,8 @@ import kong.unirest.core.json.JSONArray;
 import kong.unirest.core.json.JSONObject;
 import org.identityconnectors.common.logging.Log;
 import org.identityconnectors.common.security.GuardedString;
+import org.identityconnectors.framework.common.exceptions.AlreadyExistsException;
+import org.identityconnectors.framework.common.exceptions.ConnectionFailedException;
 import org.identityconnectors.framework.common.exceptions.ConnectorException;
 import org.identityconnectors.framework.common.exceptions.InvalidAttributeValueException;
 import org.identityconnectors.framework.common.objects.OperationOptions;
@@ -104,11 +106,35 @@ public class CyberArkEndpoint {
         }
 
         if (statusCode == 401) {
-            throw new ConnectorException("The request requires user authentication.");
+            throw new ConnectionFailedException("The request requires user authentication.");
         }
 
         if (statusCode == 400) {
             throw new InvalidAttributeValueException("Could not process the request, reason: " + response.getBody());
+        }
+
+        if (statusCode == 403) {
+            throw new ConnectorException("The server received and understood the request, but will not fulfill it. Authorization will not help and the request MUST NOT be repeated");
+        }
+
+        if (statusCode == 404) {
+            throw new ConnectorException("The server did not find anything that matches the Request-URI. No indication is given of whether the condition is temporary or permanent.");
+        }
+
+        if (statusCode == 409) {
+            throw new AlreadyExistsException("The request could not be completed due to a conflict with the current state of the resource.");
+        }
+
+        if (statusCode == 429) {
+            throw new ConnectorException("The user has sent too many requests in a given amount of time (\"rate limiting\").");
+        }
+
+        if (statusCode == 500) {
+            throw new ConnectorException("The server encountered an unexpected condition which prevented it from fulfilling the request.");
+        }
+
+        if (statusCode == 501) {
+            throw new ConnectorException("The server does not support this operation due to version incompatibility.");
         }
 
         throw new ConnectorException("Could not process the request, reason: " + response.getBody());
