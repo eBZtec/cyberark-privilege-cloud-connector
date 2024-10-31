@@ -3,6 +3,7 @@ package br.tec.ebz.connid.connector.cyberark.operations;
 import br.tec.ebz.connid.connector.cyberark.CyberArkEndpoint;
 import br.tec.ebz.connid.connector.cyberark.interfaces.IUserOperations;
 import br.tec.ebz.connid.connector.cyberark.schema.UserSchemaAttributes;
+import com.evolveum.polygon.common.GuardedStringAccessor;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.JsonNode;
 import kong.unirest.core.json.JSONArray;
@@ -32,6 +33,7 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     private static final String SEARCH_USERS_ENDPOINT = "/PasswordVault/API/Users/";
     private static final String GET_USER_DETAILS = "/PasswordVault/API/Users/%s/";
     private static final String UPDATE_USER_ENDPOINT = "/PasswordVault/API/Users/%s/";
+    private static final String RESET_USER_PASSWORD_ENDPOINT = "/PasswordVault/API/Users/%s/ResetPassword/";
 
     private final CyberArkEndpoint cyberArkEndpoint;
 
@@ -73,8 +75,52 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
     }
 
     @Override
-    public void changePassword(String uid, GuardedString password) {
+    public void changePassword(String uid, Set<AttributeDelta> modifications) {
+        LOG.info("Starting process to reset user password");
+        for (AttributeDelta deltas: modifications) {
+            String attributeName = deltas.getName();
 
+            if (attributeName.equals(OperationalAttributes.PASSWORD_NAME)) {
+                LOG.info("Found password delta modification for user {0}", uid);
+
+                List<Object> valuesToRemove = deltas.getValuesToRemove();
+
+                if (valuesToRemove != null) {
+                    throw new InvalidAttributeValueException("Could not reset user's password: Password cannot be removed");
+                }
+
+                List<Object> valuesToAdd = deltas.getValuesToAdd();
+                List<Object> valuesToReplace = deltas.getValuesToReplace();
+
+                if (valuesToAdd != null) {
+                    resetPassword(uid, valuesToAdd);
+                }
+
+                if (valuesToReplace != null) {
+                    resetPassword(uid, valuesToReplace);
+                }
+            }
+        }
+    }
+
+    public void resetPassword(String uid, List<Object> values) {
+        if (values.size() > 1) {
+            throw new InvalidAttributeValueException("Could not reset user's password: More than one value for password was found");
+        }
+        GuardedStringAccessor accessor = new GuardedStringAccessor();
+        GuardedString password = (GuardedString) values.get(0);
+        password.access(accessor);
+
+        String endpoint = String.format(RESET_USER_PASSWORD_ENDPOINT, uid);
+        JSONObject body = new JSONObject();
+        body.put("id", uid);
+        body.put("newPassword", accessor.getClearString());
+
+        cyberArkEndpoint.post(endpoint, body);
+
+        if (LOG.isOk()) {
+            LOG.ok("Password reset successfully for user {0}", uid);
+        }
     }
 
     @Override
@@ -105,8 +151,11 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
         }
 
         for (AttributeDelta modifications: deltas) {
-            JSONObject current = oldUser;
             String attributeName = modifications.getName();
+
+            if (attributeName.equals(OperationalAttributes.PASSWORD_NAME)) continue;
+
+            JSONObject current = oldUser;
             final String[] attributePath = attributeName.split("\\.");
 
             for (int i = 0; i < attributePath.length - 1; i++) {
@@ -201,6 +250,8 @@ public class UserOperations extends ObjectOperations implements IUserOperations 
             }
         }
         HttpResponse<JsonNode> response = cyberArkEndpoint.put(endpoint, oldUser);
+
+        changePassword(uidValue, deltas);
 
         String currentId = getId(response.getBody().getObject());
 

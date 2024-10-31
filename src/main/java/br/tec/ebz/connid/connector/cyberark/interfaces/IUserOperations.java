@@ -14,7 +14,7 @@ public interface IUserOperations {
 
     Uid create(Set<Attribute> attributeSet);
 
-    void changePassword(String uid, GuardedString password);
+    void changePassword(String uid, Set<AttributeDelta> modifications);
 
     void enableUser(String uid);
 
