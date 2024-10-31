@@ -77,7 +77,7 @@ mvn clean install -DskipTests=true
 
 ### Installation
 
-* put org.connid.bundles.unix-{version}.jar to ```{midPoint_home}/icf-connectors/``` or ```{midPoint_home}/connid-connectors/``` directory
+* put  connector-cyberark-{version}.jar to ```{midPoint_home}/icf-connectors/``` or ```{midPoint_home}/connid-connectors/``` directory
 
 ### Run tests
 
